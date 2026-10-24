@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "node tools/build-dist.mjs",
-    "dist:all": "node tools/build-dist.mjs && node tools/export-workout.mjs",
+    "dist:all": "node tools/build-dist.mjs && node tools/export-workout.mjs && node tools/export-workout.mjs --no-rest",
     "fit:export": "node tools/export-workout.mjs",
     "test:e2e": "playwright test"
   },
