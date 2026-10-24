@@ -6,23 +6,24 @@ ausschließlich lokal im Browser gespeichert.
 
 ## Hosting / Installation
 
-Die App wird als statische PWA ohne Backend gehostet. Für den Garmin-Workout-Export müssen `index.html`, `garmin.js`, `manifest.json` und `sw.js` gemeinsam bereitgestellt werden.
+Die App ist eine statische PWA ohne Backend. Baue und hoste das komplette Bundle:
 
-1. Die vier Dateien auf einen statischen HTTPS-Host legen
-   (z.B. GitHub Pages, Netlify, Cloudflare Pages)
-2. Die HTTPS-URL am Smartphone in Chrome öffnen
-3. Menü → „Zum Startbildschirm hinzufügen"
+1. `npm run build` ausführen.
+2. Alle Dateien aus `dist/` auf einen statischen HTTPS-Host legen (z. B. GitHub Pages, Netlify oder Cloudflare Pages).
+3. Die HTTPS-URL am Smartphone in Chrome öffnen.
+4. Menü → „Zum Startbildschirm hinzufügen“.
 
-Alternativ baut `npm run build` das auslieferbare Bundle nach `dist/`, das nur die sechs App-Dateien enthält. `npm run dist:all` erzeugt zusätzlich die `.FIT`-Workout-Dateien unter `dist/workouts/` für den Weg auf die Uhr. Der komplette Ablauf bis zur abgeschlossenen Aktivität steht in [`GARMIN-RELEASE-0.md`](GARMIN-RELEASE-0.md).
+`npm run dist:all` baut das Bundle und erzeugt zusätzlich `.FIT`-Workout-Dateien unter `dist/workouts/`.
 
 > HTTPS ist erforderlich, damit Kamera-Zugriff und PWA-Installation funktionieren.
-> Garmin-Export erzeugt eine `.FIT`-Workout-Datei lokal im Browser. Die App kann sie
-> per Bluetooth direkt an eine Garmin-Uhr senden (Chrome, Edge oder Android; iOS
-> Safari kann das nicht) – als Rückfallweg per USB in den Ordner `Garmin/NewFiles`
-> der Uhr, weil Garmin Connect Web keine Workout-Dateien annimmt. Abgeschlossene
-> Krafttrainings können als Original-`.FIT` aus Garmin Connect manuell
-> zurückimportiert werden. Automatische Synchronisierung, Garmin-Konto-Verbindung
-> und Live-Steuerung der Uhr gibt es nicht.
+> Garmin-Workouts können als `.FIT` exportiert und direkt per Bluetooth oder
+> USB an die Uhr übertragen werden. Für Garmin Connect gibt es zusätzlich einen
+> strukturierten Workout-JSON-Export, den du mit einer Drittanbieter-Erweiterung
+> in Connect importierst; Connect bietet selbst keinen JSON-Workout-Import.
+> Diese Erweiterung erhält Zugriff auf deine Connect-Sitzung. Prüfe den Anbieter,
+> bevor du sie installierst. Abgeschlossene Krafttrainings können als Original-
+> `.FIT` aus Garmin Connect manuell zurückimportiert werden. Die PWA speichert
+> keine Garmin-Zugangsdaten und verbindet sich nicht mit dem Connect-Konto.
 
 ## Funktionen (Überblick)
 
@@ -30,7 +31,9 @@ Alternativ baut `npm run build` das auslieferbare Bundle nach `dist/`, das nur d
 - Konfigurierbares Profil → automatische Kalorien-/Makro-Ziele
 - Ernährungs-Tracking inkl. Barcode-Scanner
 - Mehrere Trainingspläne, importier- und exportierbar
-- Garmin-Workout-Export als `.FIT`, direkter Transfer an die Uhr per Bluetooth und manueller Import abgeschlossener Krafttrainings aus Garmin Connect
+- Garmin-Workout-Export als `.FIT` und Garmin-Connect-Workout-Export als `.json`
+  (Import in Connect nur mit einer Drittanbieter-Erweiterung), direkter
+  Bluetooth-Transfer und manueller Import abgeschlossener Krafttrainings
 - Daten-Export/Import als JSON (Backup)
 
 Der manuelle Ablauf und die Checkliste für einen echten Garmin-Watch-Test stehen in [`GARMIN-RELEASE-0.md`](GARMIN-RELEASE-0.md).
@@ -67,8 +70,9 @@ Die Suite startet IRON.LOG in Chromium und läuft ohne manuelles Dateikopieren:
 | `tests/garmin-codec.spec.js` | Protobuf- und COBS-Kodierung der Bluetooth-Nachrichten |
 | `tests/garmin-ble.spec.js` | Upload zur Uhr gegen eine Mock-Uhr: Sitzungsaufbau, Datei anlegen, Byte-Transfer mit laufender CRC, Ablehnung durch die Uhr |
 | `tests/garmin-ble-ui.spec.js` | Bluetooth-Knopf in der App und die Fehlermeldung ohne Web Bluetooth |
+| `tests/garmin-connect.spec.js` | Connect-Workout-JSON-Struktur, Gewichts-/Satz-/Pausenwerte, nicht zugeordnete Übungen und App-Download |
 
-Die Garmin-Seite ist simuliert: der Test baut echte FIT-Nachrichten und spricht das echte Bluetooth-Protokoll gegen eine nachgebaute Uhr, aber ohne echte Uhr und ohne Garmin Connect. Der Test ersetzt keinen Lauf auf einer echten Uhr, siehe `GARMIN-RELEASE-0.md`. In CI läuft die Suite über `.github/workflows/e2e.yml`. `package.json`, `playwright.config.js` und `tests/` gehören nur zur Entwicklung und werden nicht ausgeliefert.
+Die Garmin-Seite ist simuliert: FIT- und Workout-JSON werden lokal geprüft. Die Suite spricht das Bluetooth-Protokoll gegen eine nachgebaute Uhr, aber weder mit Garmin Connect noch mit einer echten Uhr. Sie ersetzt keinen Hardwaretest; Details stehen in `GARMIN-RELEASE-0.md`. In CI läuft die Suite über `.github/workflows/e2e.yml`. `package.json`, `playwright.config.js` und `tests/` gehören nur zur Entwicklung und werden nicht ausgeliefert.
 
 ## Aktualisierung
 

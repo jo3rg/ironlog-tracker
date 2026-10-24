@@ -22,7 +22,7 @@ Result:
 
 ## 2. Put the workout on the watch
 
-Two routes. The app pushes the file straight to the watch over Bluetooth; USB is the fallback.
+The app offers three transfer paths: Garmin Connect via an optional third-party importer, direct Bluetooth, or USB.
 
 ### 2a. Bluetooth from the app
 
@@ -36,7 +36,20 @@ How it works: the app speaks Garmin's own multi-link protocol over GATT — serv
 
 If the browser shows no devices, the watch is not in pairing mode or does not expose the multi-link service. Then use 2b.
 
-### 2b. USB (fallback)
+### 2b. Garmin Connect mit einer Import-Erweiterung
+
+Garmin Connect Web hat keinen nativen Import für Workout-JSON. IRON.LOG erzeugt ein JSON im inoffiziellen Garmin-Workout-Service-Format. Zum Einlesen brauchst du eine Drittanbieter-Erweiterung, zum Beispiel [Garmin Workout Importer](https://github.com/estruyf/garmin-workout-browser-extension). Diese Erweiterung arbeitet in deiner angemeldeten Connect-Seite und erhält dadurch Zugriff auf dein Garmin-Konto. Prüfe den Anbieter und die Berechtigungen, bevor du sie installierst.
+
+1. Öffne IRON.LOG → **Stats → Daten** und wähle **Connect-Workout (.json) exportieren**.
+2. Melde dich in einem Desktop-Browser bei [Garmin Connect](https://connect.garmin.com/) an und installiere/öffne die Import-Erweiterung.
+3. Importiere die heruntergeladene JSON-Datei über die Erweiterung. Der Workout-Service ist undokumentiert; Garmin kann das Format jederzeit ändern.
+4. Prüfe in Garmin Connect, ob Name, Übungsreihenfolge, Sätze, Wiederholungen und Pausen stimmen.
+5. Öffne die Garmin-Connect-App, synchronisiere die Uhr und sende das Workout an das Gerät.
+
+IRON.LOG lehnt Übungen ab, für die im Exporter keine Garmin-Katalogzuordnung hinterlegt ist, statt einen nicht zugeordneten Übungsschlüssel zu exportieren. Für solche Trainingstage nutze den Connect-Workout-Builder. Die JSON-Erstellung und der Import sind nicht gegen ein echtes Connect-Konto oder eine echte Uhr validiert.
+
+### 2c. USB (Fallback)
+
 
 Garmin Connect Web does not accept workout `.FIT` files: its import covers activities and courses, workouts only travel from the Connect cloud to the device (Garmin forum, [How to Send Workouts to a Garmin Device](https://support.garmin.com/en-US/?faq=Oyqt6jUjOF8L1Rnuc9Sms8)).
 
@@ -49,11 +62,11 @@ Notes:
 
 - macOS does not mount MTP devices natively; use a Windows or Linux machine, or the Android File Transfer app.
 - If the watch only shows a `Garmin/Workouts` folder, put the file there instead.
-- Alternative for the Connect route: rebuild the workout in the Connect workout builder and send it with **Send to Device**. The `.FIT` from IRON.LOG is then only a reference, not the file that is transferred.
+- If the JSON exporter rejects an exercise name, build that day in Garmin Connect or use the FIT/USB workflow above.
 
 ## 3. Check the workout on the watch
 
-1. Exercise order and names must match the plan day. `Klimmzüge (oder Latzug breit)` and `Beinstrecker` have no Garmin catalog entry, so they are exported as custom labels and may show without muscle group or animation.
+1. For the FIT workflow, exercise order and names must match the plan day. `Klimmzüge (oder Latzug breit)` and `Beinstrecker` use custom FIT labels and may appear without a Garmin exercise category or animation.
 2. Every exercise must show the intended set count, rep target, and rest. The exporter reduces a rep range to its lower bound (`6-8` becomes `6`) and adds no target weight unless the app history already holds one for that exercise.
 3. Run one representative set: rep counting, set completion, rest timer, and the transition to the next exercise must behave as expected.
 4. Stop and save the workout. It must appear in Garmin Connect as a completed activity. This file is a **workout prescription**, not a completed activity; it must never be uploaded as an activity.
