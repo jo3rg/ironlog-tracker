@@ -298,8 +298,11 @@
 
   async function requestDevice() {
     if (!isSupported()) throw new Error('Web Bluetooth wird von diesem Browser nicht unterstützt (Chrome, Edge oder Android).');
+    // Kein Service-Filter: manche Uhren kündigen den Multi-Link-Kanal erst
+    // im Kopplungsmodus an, dann wäre die Liste leer. Stattdessen alle
+    // Bluetooth-Geräte anbieten und den Garmin-Kanal danach prüfen.
     return navigator.bluetooth.requestDevice({
-      filters: [{services: [SERVICE_UUID]}],
+      acceptAllDevices: true,
       optionalServices: [SERVICE_UUID]
     });
   }
