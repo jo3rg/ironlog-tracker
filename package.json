@@ -1,0 +1,14 @@
+{
+  "name": "ironlog-tracker",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build-dist.mjs",
+    "dist:all": "node tools/build-dist.mjs && node tools/export-workout.mjs",
+    "fit:export": "node tools/export-workout.mjs",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@garmin/fitsdk": "^21.218.0",
+    "@playwright/test": "^1.64.1"
+  }
+}

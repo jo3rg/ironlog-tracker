@@ -19,6 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="garmin.js"></script>
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -1308,6 +1309,16 @@ svg.ic{width:1.12em;height:1.12em;vertical-align:-0.16em;flex-shrink:0;}
     <button class="btn btn-secondary" onclick="exportData()"><svg class="ic"><use href="#ic-download"/></svg> Export (JSON)</button>
     <div style="height:8px"></div>
     <button class="btn btn-secondary" onclick="exportCsv()"><svg class="ic"><use href="#ic-download"/></svg> Training als CSV (Excel)</button>
+    <div style="height:8px"></div>
+    <button class="btn btn-secondary" onclick="exportGarminWorkout()"><svg class="ic"><use href="#ic-download"/></svg> Garmin-Workout (.FIT) herunterladen</button>
+    <div style="font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;">
+      Erstellt eine FIT-Workout-Datei für den aktuell gewählten Trainingstag. Garmin Connect Web → Training → Importieren oder manuelle Übertragung per USB; die Uhr synchronisiert das Workout anschließend.
+    </div>
+    <button class="btn btn-secondary" onclick="document.getElementById('garminActivityFile').click()"><svg class="ic"><use href="#ic-upload"/></svg> Garmin-Aktivität importieren (.FIT)</button>
+    <input type="file" id="garminActivityFile" accept=".fit,.FIT,application/octet-stream" style="display:none" onchange="importGarminActivity(event)">
+    <div style="font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;">
+      In Garmin Connect Web bei der Aktivität „Original exportieren“ (.FIT), dann hier auswählen. Kraftsätze, Gewicht, Wiederholungen und verfügbare Aktivitätswerte werden übernommen; dieselbe Datei wird nur einmal importiert.
+    </div>
     <div style="height:8px"></div>
     <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()"><svg class="ic"><use href="#ic-upload"/></svg> Import (JSON)</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -6430,6 +6441,39 @@ function exportData() {
   renderBackupReminder();
   showToast("✓ Export erstellt");
 }
+
+function exportGarminWorkout() {
+  try {
+    const result = GarminAdapter.exportWorkout(getDay(state.currentDayIdx), state.workoutHistory);
+    const unmapped = result.unmapped.length
+      ? ` ${result.unmapped.length} Übung(en) werden als benutzerdefinierte Garmin-Übungen exportiert.`
+      : '';
+    showToast(`✓ FIT-Datei erstellt (${result.bytes} Bytes).${unmapped}`);
+  } catch (err) {
+    showToast(err.message || 'Garmin-Export fehlgeschlagen.');
+  }
+}
+async function importGarminActivity(event) {
+  const input = event.currentTarget || event.target;
+  const file = input.files && input.files[0];
+  if (!file) return;
+  try {
+    const result = await GarminAdapter.importActivityFile(file, state.workoutHistory, state.plans);
+    if (result.duplicate) {
+      showToast('Diese Garmin-FIT-Aktivität wurde bereits importiert.');
+      return;
+    }
+    state.workoutHistory.push(result.entry);
+    saveState();
+    if (document.querySelector('.view.active')?.id === 'view-progress') renderProgress();
+    showToast(`✓ Garmin-Training importiert: ${result.entry.garmin.totalSets} Sätze.`);
+  } catch (err) {
+    showToast(err.message || 'Garmin-Aktivität konnte nicht importiert werden.', true);
+  } finally {
+    input.value = '';
+  }
+}
+
 
 function exportCsv() {
   // Trainings-Historie als CSV (Semikolon + BOM für Excel-DE); eine Zeile pro Satz.
