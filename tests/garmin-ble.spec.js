@@ -31,10 +31,11 @@ test('pushes a workout to the watch and the bytes arrive unchanged', async () =>
   expect(Array.from(watch.file.bytes)).toEqual(Array.from(workout));
   expect(progress.at(-1)).toEqual([workout.length, workout.length]);
   const ids = watch.frames.map(frame => frame.id);
+  const chunks = Math.ceil(workout.length / 7);
   expect(ids[0]).toBe(5005);
   expect(ids[1]).toBe(5003);
-  expect(ids.filter(id => id === 5004).length).toBe(Math.ceil(workout.length / 15));
-  expect(ids.filter(id => id === 5000).length).toBe(Math.ceil(workout.length / 15));
+  expect(ids.filter(id => id === 5004).length).toBe(chunks);
+  expect(ids.filter(id => id === 5000).length).toBe(chunks);
 });
 
 test('reports a refusal from the watch instead of pretending success', async () => {

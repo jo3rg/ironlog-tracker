@@ -234,7 +234,10 @@
 
       let offset = 0;
       let runningCrc = 0;
-      const budget = Math.max(1, this.chunkSize - 4);
+      // Die Uhr bricht einen Upload ab, wenn eine Nachricht zu lange im Funk
+      // unterwegs ist. Deshalb bleiben die Blöcke klein (Gadgetbridge:
+      // MTU - 13 Byte Nutzdaten je FILE_TRANSFER_DATA).
+      const budget = Math.max(1, this.chunkSize + 1 - 13);
       while (offset < total) {
         const size = Math.min(budget, total - offset);
         const chunk = bytes.subarray(offset, offset + size);
