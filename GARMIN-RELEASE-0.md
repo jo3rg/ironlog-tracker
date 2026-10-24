@@ -22,9 +22,18 @@ Result:
 
 ## 2. Put the workout on the watch
 
-1. Open Garmin Connect web → **Training & Planning → Workouts** → **Import** and choose `dist/workouts/ironlog-ua.fit`.
-2. Inspect the imported workout, then **Send to Device** and pick the watch.
-3. On the watch: open the workout under Strength workouts. It must open without an error.
+Garmin Connect Web does not accept workout `.FIT` files: its import covers activities and courses, workouts only travel from the Connect cloud to the device (Garmin forum, [How to Send Workouts to a Garmin Device](https://support.garmin.com/en-US/?faq=Oyqt6jUjOF8L1Rnuc9Sms8)). A generated workout therefore goes onto the watch over USB:
+
+1. Connect the watch to the computer with the proprietary USB cable. When the watch asks for the USB mode, choose **Mass Storage / MTP**.
+2. Open the new drive in the file manager. Look for the `Garmin` folder; inside it the inbox folder `NewFiles` (some models additionally show `Garmin/Workouts`). Garmin's own manual-install instructions use `Garmin/NewFiles` ([Steps to Manually Install a File](https://support.garmin.com/en-US/?faq=rzvP53Si4O3barYoXzw5L7)).
+3. Copy `dist/workouts/ironlog-ua.fit` into `NewFiles`.
+4. Safely eject the drive, restart the watch, and open **Workouts → Strength**. The workout must appear and open without an error.
+
+Notes:
+
+- macOS does not mount MTP devices natively; use a Windows or Linux machine, or the Android File Transfer app.
+- If the watch only shows a `Garmin/Workouts` folder, put the file there instead.
+- Alternative for the Connect route: rebuild the workout in the Connect workout builder and send it with **Send to Device**. The `.FIT` from IRON.LOG is then only a reference, not the file that is transferred.
 
 ## 3. Check the workout on the watch
 
@@ -43,7 +52,7 @@ Result:
 
 - Watch model and firmware:
 - Garmin Connect version/date:
-- Workout imported and sent to watch: pass/fail
+- Workout copied to the watch over USB: pass/fail
 - Exercise names/order:
 - Set/reps/rest behavior:
 - Weight display:
@@ -56,7 +65,8 @@ Result:
 
 | Symptom | Cause | Next step |
 | --- | --- | --- |
-| Garmin Connect refuses the file | Not a FIT workout | Use the file from `dist/workouts/`, not a course or activity export |
+| Connect Web import rejects the file | Workouts cannot be uploaded as FIT to Connect | Use the USB route; only activities and courses can be uploaded |
+| Watch does not show the workout after the copy | Wrong folder or pending sync | Copy into `Garmin/NewFiles`, eject, restart the watch, check Workouts → Strength |
 | Watch shows an unnamed exercise | No Garmin catalog entry | Expected for custom labels; rename on the watch if needed |
 | Watch skips the rest between sets | Step layout of the repeat block | Test the second file: `npm run fit:export -- --no-rest` and send that one |
 | Import says "keine Garmin-Krafttrainingsaktivität" | Wrong file type | Export the **original** FIT of the activity, not TCX, GPX, or a course |

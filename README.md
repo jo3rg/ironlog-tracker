@@ -16,10 +16,11 @@ Die App wird als statische PWA ohne Backend gehostet. Für den Garmin-Workout-Ex
 Alternativ baut `npm run build` das auslieferbare Bundle nach `dist/`, das nur die sechs App-Dateien enthält. `npm run dist:all` erzeugt zusätzlich die `.FIT`-Workout-Dateien unter `dist/workouts/` für den Weg auf die Uhr. Der komplette Ablauf bis zur abgeschlossenen Aktivität steht in [`GARMIN-RELEASE-0.md`](GARMIN-RELEASE-0.md).
 
 > HTTPS ist erforderlich, damit Kamera-Zugriff und PWA-Installation funktionieren.
-> Garmin-Export erzeugt eine `.FIT`-Workout-Datei lokal im Browser; abgeschlossene
-> Krafttrainings können als Original-`.FIT` aus Garmin Connect manuell zurückimportiert
-> werden. Automatische Synchronisierung, Garmin-Konto-Verbindung und Live-Steuerung
-> der Uhr gibt es nicht.
+> Garmin-Export erzeugt eine `.FIT`-Workout-Datei lokal im Browser; sie wird per USB
+> in den Ordner `Garmin/NewFiles` der Uhr kopiert, weil Garmin Connect Web keine
+> Workout-Dateien annimmt. Abgeschlossene Krafttrainings können als Original-`.FIT`
+> aus Garmin Connect manuell zurückimportiert werden. Automatische Synchronisierung,
+> Garmin-Konto-Verbindung und Live-Steuerung der Uhr gibt es nicht.
 
 ## Funktionen (Überblick)
 

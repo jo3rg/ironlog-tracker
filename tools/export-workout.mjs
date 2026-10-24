@@ -84,4 +84,4 @@ for (const day of plan.days) {
     });
   }
 }
-console.log(`\n${skipped ? `${skipped} Tag(e) übersprungen. ` : ''}Import in Garmin Connect: Training & Planning → Workouts → Importieren, danach „Send to Device“.`);
+console.log(`\n${skipped ? `${skipped} Tag(e) übersprungen. ` : ''}Auf die Uhr: USB-Kabel, in der Uhr „Massenspeicher/MTP“ wählen, die Datei in den Ordner Garmin/NewFiles der Uhr kopieren, Uhr neu starten.`);

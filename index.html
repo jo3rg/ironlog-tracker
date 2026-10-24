@@ -1312,7 +1312,7 @@ svg.ic{width:1.12em;height:1.12em;vertical-align:-0.16em;flex-shrink:0;}
     <div style="height:8px"></div>
     <button class="btn btn-secondary" onclick="exportGarminWorkout()"><svg class="ic"><use href="#ic-download"/></svg> Garmin-Workout (.FIT) herunterladen</button>
     <div style="font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;">
-      Erstellt eine FIT-Workout-Datei für den aktuell gewählten Trainingstag. Garmin Connect Web → Training → Importieren oder manuelle Übertragung per USB; die Uhr synchronisiert das Workout anschließend.
+      Erstellt eine FIT-Workout-Datei für den aktuell gewählten Trainingstag. Übertragung auf die Uhr: USB-Kabel anschließen, in der Uhr „Massenspeicher/MTP“ wählen, die Datei im Ordner <em>Garmin/NewFiles</em> der Uhr ablegen, Uhr neu starten. Garmin Connect Web nimmt keine Workout-FIT-Dateien per Upload an, Aktivitäten lassen sich dort aber als Original exportieren.
     </div>
     <button class="btn btn-secondary" onclick="document.getElementById('garminActivityFile').click()"><svg class="ic"><use href="#ic-upload"/></svg> Garmin-Aktivität importieren (.FIT)</button>
     <input type="file" id="garminActivityFile" accept=".fit,.FIT,application/octet-stream" style="display:none" onchange="importGarminActivity(event)">
