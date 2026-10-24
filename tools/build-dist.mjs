@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
-const files = ['index.html', 'garmin.js', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png'];
+const files = ['index.html', 'garmin.js', 'garmin-codec.js', 'garmin-ble.js', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png'];
 
 await fs.mkdir(out, {recursive: true});
 for (const file of files) await fs.rm(path.join(out, file), {force: true});

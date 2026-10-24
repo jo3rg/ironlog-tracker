@@ -1,6 +1,6 @@
 /* IRON.LOG Service Worker – Offline-Cache (© 2026 Markus Felser) */
-const CACHE = 'ironlog-v6';
-const CORE = ['./', './index.html', './manifest.json', './garmin.js'];
+const CACHE = 'ironlog-v7';
+const CORE = ['./', './index.html', './manifest.json', './garmin.js', './garmin-codec.js', './garmin-ble.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

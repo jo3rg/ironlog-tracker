@@ -22,7 +22,23 @@ Result:
 
 ## 2. Put the workout on the watch
 
-Garmin Connect Web does not accept workout `.FIT` files: its import covers activities and courses, workouts only travel from the Connect cloud to the device (Garmin forum, [How to Send Workouts to a Garmin Device](https://support.garmin.com/en-US/?faq=Oyqt6jUjOF8L1Rnuc9Sms8)). A generated workout therefore goes onto the watch over USB:
+Two routes. The app pushes the file straight to the watch over Bluetooth; USB is the fallback.
+
+### 2a. Bluetooth from the app
+
+1. Open IRON.LOG in Chrome or Edge on the desktop, or in Chrome on Android. iOS Safari has no Web Bluetooth.
+2. Put the watch into pairing mode (Settings → Bluetooth → Pairing) and keep it close to the computer.
+3. In the app: **Stats → Daten → Workout an die Uhr senden (Bluetooth)**.
+4. Pick the watch in the browser's device list. The app opens Garmin's multi-link channel, creates the file on the watch and streams it in chunks; the status line shows the progress.
+5. On the watch: **Workouts → Strength** must show the day name and open without an error.
+
+How it works: the app speaks Garmin's own multi-link protocol over GATT — service `6A4E2800-667B-11E3-949A-0800200C9A66`, characteristics `6A4E281x` (receive) and `6A4E282x` (send) — and uploads with `CREATE_FILE` (5005), `UPLOAD_REQUEST` (5003) and `FILE_TRANSFER_DATA` (5004). The file lands in the watch's inbox and the watch imports it, the same path the USB copy uses. Protocol reference: [exercisetracks/garmin-ble-protocol.md](https://github.com/exercisetracks/tracks/blob/main/docs/garmin-ble-protocol.md) (measured on a fenix 6X Pro Solar) and the Gadgetbridge Garmin implementation.
+
+If the browser shows no devices, the watch is not in pairing mode or does not expose the multi-link service. Then use 2b.
+
+### 2b. USB (fallback)
+
+Garmin Connect Web does not accept workout `.FIT` files: its import covers activities and courses, workouts only travel from the Connect cloud to the device (Garmin forum, [How to Send Workouts to a Garmin Device](https://support.garmin.com/en-US/?faq=Oyqt6jUjOF8L1Rnuc9Sms8)).
 
 1. Connect the watch to the computer with the proprietary USB cable. When the watch asks for the USB mode, choose **Mass Storage / MTP**.
 2. Open the new drive in the file manager. Look for the `Garmin` folder; inside it the inbox folder `NewFiles` (some models additionally show `Garmin/Workouts`). Garmin's own manual-install instructions use `Garmin/NewFiles` ([Steps to Manually Install a File](https://support.garmin.com/en-US/?faq=rzvP53Si4O3barYoXzw5L7)).
@@ -52,6 +68,7 @@ Notes:
 
 - Watch model and firmware:
 - Garmin Connect version/date:
+- Workout transferred over Bluetooth: pass/fail
 - Workout copied to the watch over USB: pass/fail
 - Exercise names/order:
 - Set/reps/rest behavior:
@@ -65,8 +82,10 @@ Notes:
 
 | Symptom | Cause | Next step |
 | --- | --- | --- |
-| Connect Web import rejects the file | Workouts cannot be uploaded as FIT to Connect | Use the USB route; only activities and courses can be uploaded |
-| Watch does not show the workout after the copy | Wrong folder or pending sync | Copy into `Garmin/NewFiles`, eject, restart the watch, check Workouts → Strength |
+| Browser shows no device | Watch not in pairing mode, or no multi-link service | Pair the watch, retry; otherwise use the USB route |
+| Transfer stops with a timeout | The watch did not answer a status | Report the watch model and firmware; the protocol is reverse-engineered and firmware differences are possible |
+| Connect Web import rejects the file | Workouts cannot be uploaded as FIT to Connect | Use the app or the USB route; only activities and courses can be uploaded |
+| Watch does not show the workout after the transfer | Import batch not processed yet | Restart the watch, check Workouts → Strength |
 | Watch shows an unnamed exercise | No Garmin catalog entry | Expected for custom labels; rename on the watch if needed |
 | Watch skips the rest between sets | Step layout of the repeat block | Test the second file: `npm run fit:export -- --no-rest` and send that one |
 | Import says "keine Garmin-Krafttrainingsaktivität" | Wrong file type | Export the **original** FIT of the activity, not TCX, GPX, or a course |
@@ -75,8 +94,9 @@ Notes:
 
 ## Known limits
 
-- `garmin.js` generates a `.FIT` workout locally. It does not call Garmin APIs or connect to the watch.
-- Transfer is manual through Garmin Connect or a compatible USB workflow.
+- `garmin.js` generates the `.FIT` workout locally. It does not call Garmin APIs.
+- `garmin-ble.js` talks to the watch over Bluetooth with Garmin's reverse-engineered multi-link protocol. It is verified against a mock watch in the test suite, not against real hardware yet.
+- The Bluetooth route needs Web Bluetooth: Chrome, Edge or Android. iOS Safari is not supported.
 - The app exports the selected day from the active plan, not a completed workout from history.
 - Exercise catalog mappings cover common names only. Unmapped names use Garmin's `unknown` category plus a custom exercise title; watch rendering varies by model.
 - Repetition ranges are reduced to their lower bound. Weight is inferred from the latest saved set for the same exercise ID/name; confirm it is sensible before sending.

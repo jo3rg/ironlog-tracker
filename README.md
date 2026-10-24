@@ -16,11 +16,13 @@ Die App wird als statische PWA ohne Backend gehostet. Für den Garmin-Workout-Ex
 Alternativ baut `npm run build` das auslieferbare Bundle nach `dist/`, das nur die sechs App-Dateien enthält. `npm run dist:all` erzeugt zusätzlich die `.FIT`-Workout-Dateien unter `dist/workouts/` für den Weg auf die Uhr. Der komplette Ablauf bis zur abgeschlossenen Aktivität steht in [`GARMIN-RELEASE-0.md`](GARMIN-RELEASE-0.md).
 
 > HTTPS ist erforderlich, damit Kamera-Zugriff und PWA-Installation funktionieren.
-> Garmin-Export erzeugt eine `.FIT`-Workout-Datei lokal im Browser; sie wird per USB
-> in den Ordner `Garmin/NewFiles` der Uhr kopiert, weil Garmin Connect Web keine
-> Workout-Dateien annimmt. Abgeschlossene Krafttrainings können als Original-`.FIT`
-> aus Garmin Connect manuell zurückimportiert werden. Automatische Synchronisierung,
-> Garmin-Konto-Verbindung und Live-Steuerung der Uhr gibt es nicht.
+> Garmin-Export erzeugt eine `.FIT`-Workout-Datei lokal im Browser. Die App kann sie
+> per Bluetooth direkt an eine Garmin-Uhr senden (Chrome, Edge oder Android; iOS
+> Safari kann das nicht) – als Rückfallweg per USB in den Ordner `Garmin/NewFiles`
+> der Uhr, weil Garmin Connect Web keine Workout-Dateien annimmt. Abgeschlossene
+> Krafttrainings können als Original-`.FIT` aus Garmin Connect manuell
+> zurückimportiert werden. Automatische Synchronisierung, Garmin-Konto-Verbindung
+> und Live-Steuerung der Uhr gibt es nicht.
 
 ## Funktionen (Überblick)
 
@@ -28,7 +30,7 @@ Alternativ baut `npm run build` das auslieferbare Bundle nach `dist/`, das nur d
 - Konfigurierbares Profil → automatische Kalorien-/Makro-Ziele
 - Ernährungs-Tracking inkl. Barcode-Scanner
 - Mehrere Trainingspläne, importier- und exportierbar
-- Garmin-Workout-Export als `.FIT` und manueller Import abgeschlossener Krafttrainings aus Garmin Connect
+- Garmin-Workout-Export als `.FIT`, direkter Transfer an die Uhr per Bluetooth und manueller Import abgeschlossener Krafttrainings aus Garmin Connect
 - Daten-Export/Import als JSON (Backup)
 
 Der manuelle Ablauf und die Checkliste für einen echten Garmin-Watch-Test stehen in [`GARMIN-RELEASE-0.md`](GARMIN-RELEASE-0.md).
@@ -62,8 +64,11 @@ Die Suite startet IRON.LOG in Chromium und läuft ohne manuelles Dateikopieren:
 | `tests/garmin-export.spec.js` | Jeder Plantag erzeugt eine FIT-Datei, die das Garmin FIT SDK fehlerfrei liest (CRC, Schritte, Übungstitel) |
 | `tests/garmin-import.spec.js` | Import einer abgeschlossenen Kraftaktivität: Sätze, Gewicht, Wiederholungen, Pausensätze, Zeitübungen, Datumsableitung, Ablehnung fremder Dateien, Duplikaterkennung |
 | `tests/garmin-roundtrip.spec.js` | Kompletter Umlauf: Workout-Download aus der App, Aktivität im Speicher, Import, Sollwerte in der Historie |
+| `tests/garmin-codec.spec.js` | Protobuf- und COBS-Kodierung der Bluetooth-Nachrichten |
+| `tests/garmin-ble.spec.js` | Upload zur Uhr gegen eine Mock-Uhr: Sitzungsaufbau, Datei anlegen, Byte-Transfer mit laufender CRC, Ablehnung durch die Uhr |
+| `tests/garmin-ble-ui.spec.js` | Bluetooth-Knopf in der App und die Fehlermeldung ohne Web Bluetooth |
 
-Die Garmin-Seite ist simuliert: der Test baut echte FIT-Nachrichten, aber ohne Uhr und ohne Garmin Connect. Der Test ersetzt keinen Lauf auf einer echten Uhr, siehe `GARMIN-RELEASE-0.md`. In CI läuft die Suite über `.github/workflows/e2e.yml`. `package.json`, `playwright.config.js` und `tests/` gehören nur zur Entwicklung und werden nicht ausgeliefert.
+Die Garmin-Seite ist simuliert: der Test baut echte FIT-Nachrichten und spricht das echte Bluetooth-Protokoll gegen eine nachgebaute Uhr, aber ohne echte Uhr und ohne Garmin Connect. Der Test ersetzt keinen Lauf auf einer echten Uhr, siehe `GARMIN-RELEASE-0.md`. In CI läuft die Suite über `.github/workflows/e2e.yml`. `package.json`, `playwright.config.js` und `tests/` gehören nur zur Entwicklung und werden nicht ausgeliefert.
 
 ## Aktualisierung
 

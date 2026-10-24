@@ -20,6 +20,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="garmin.js"></script>
+<script src="garmin-codec.js"></script>
+<script src="garmin-ble.js"></script>
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -1313,6 +1315,11 @@ svg.ic{width:1.12em;height:1.12em;vertical-align:-0.16em;flex-shrink:0;}
     <button class="btn btn-secondary" onclick="exportGarminWorkout()"><svg class="ic"><use href="#ic-download"/></svg> Garmin-Workout (.FIT) herunterladen</button>
     <div style="font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;">
       Erstellt eine FIT-Workout-Datei für den aktuell gewählten Trainingstag. Übertragung auf die Uhr: USB-Kabel anschließen, in der Uhr „Massenspeicher/MTP“ wählen, die Datei im Ordner <em>Garmin/NewFiles</em> der Uhr ablegen, Uhr neu starten. Garmin Connect Web nimmt keine Workout-FIT-Dateien per Upload an, Aktivitäten lassen sich dort aber als Original exportieren.
+    </div>
+    <button class="btn btn-secondary" onclick="sendWorkoutToWatch()"><svg class="ic"><use href="#ic-upload"/></svg> Workout an die Uhr senden (Bluetooth)</button>
+    <div id="bleStatus" style="font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;"></div>
+    <div style="font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:6px;">
+      Überträgt das Workout direkt per Bluetooth an eine Garmin-Uhr (Chrome, Edge oder Android). Die Uhr muss im Kopplungsmodus sein. Alternativ USB-Kabel und <em>Garmin/NewFiles</em>.
     </div>
     <button class="btn btn-secondary" onclick="document.getElementById('garminActivityFile').click()"><svg class="ic"><use href="#ic-upload"/></svg> Garmin-Aktivität importieren (.FIT)</button>
     <input type="file" id="garminActivityFile" accept=".fit,.FIT,application/octet-stream" style="display:none" onchange="importGarminActivity(event)">
@@ -6453,6 +6460,34 @@ function exportGarminWorkout() {
     showToast(err.message || 'Garmin-Export fehlgeschlagen.');
   }
 }
+async function sendWorkoutToWatch() {
+  const status = document.getElementById('bleStatus');
+  if (!GarminBle || !GarminBle.isSupported()) {
+    showToast('Web Bluetooth fehlt – Chrome, Edge oder Android nutzen.', true);
+    return;
+  }
+  let device;
+  try {
+    device = await GarminBle.requestDevice();
+  } catch (err) {
+    if (!err || err.name !== 'NotFoundError') showToast('Uhr nicht ausgewählt.', true);
+    return;
+  }
+  try {
+    const workout = GarminAdapter.planToWorkout(getDay(state.currentDayIdx), state.workoutHistory);
+    const bytes = GarminAdapter.workoutToFit(workout);
+    status.textContent = `Übertragung läuft … 0 %`;
+    const result = await GarminBle.pushWorkout(device, bytes, {
+      onProgress: (sent, total) => { status.textContent = `Übertragung läuft … ${Math.round(sent / total * 100)} %`; }
+    });
+    status.textContent = `✓ ${result.bytes} Bytes an die Uhr übertragen.`;
+    showToast('✓ Workout an die Uhr übertragen.');
+  } catch (err) {
+    status.textContent = `Fehlgeschlagen: ${err.message || err}`;
+    showToast(err.message || 'Übertragung an die Uhr fehlgeschlagen.', true);
+  }
+}
+
 async function importGarminActivity(event) {
   const input = event.currentTarget || event.target;
   const file = input.files && input.files[0];
